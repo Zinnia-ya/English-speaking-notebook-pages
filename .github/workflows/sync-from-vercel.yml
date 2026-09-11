@@ -1,0 +1,40 @@
+name: Sync from Vercel
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-from-vercel
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Pages repository
+        uses: actions/checkout@v4
+
+      - name: Download and validate the latest site
+        run: |
+          curl --fail --location --retry 3 --compressed \
+            --output index.html.new \
+            https://english-speaking-notebook.vercel.app/
+          grep -q "Zinnia's English Speaking Notebook" index.html.new
+          mv index.html.new index.html
+
+      - name: Commit changes when needed
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Sync latest website from Vercel"
+          git push
