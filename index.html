@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zinnia's English Speaking Notebook</title>
+  <style>
+    :root{
+      --bg:#f6f7fb; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
+      --line:#e5e7eb; --accent:#111827; --soft:#eef2ff; --good:#ecfdf5;
+      --warn:#fff7ed;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
+      "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{max-width:920px;margin:0 auto;padding:24px 16px 56px}
+    .hero{
+      background:linear-gradient(135deg,#ffffff,#f2f5ff);
+      border:1px solid var(--line); border-radius:24px; padding:26px;
+      box-shadow:0 10px 30px rgba(17,24,39,.05);
+    }
+    h1{margin:0 0 8px;font-size:30px}
+    .sub{color:var(--muted);line-height:1.7}
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px
+    }
+    button,select{
+      border:1px solid var(--line); background:#fff; color:var(--text);
+      border-radius:12px; padding:10px 13px; font-size:14px;
+    }
+    button{cursor:pointer;font-weight:600}
+    button:hover{background:#f9fafb}
+    .primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .primary:hover{background:#000}
+    .card{
+      background:var(--card); border:1px solid var(--line); border-radius:20px;
+      padding:22px; margin-top:18px; box-shadow:0 6px 20px rgba(17,24,39,.035);
+    }
+    .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h2{margin:0;font-size:21px}
+    h3{margin:0 0 14px;font-size:17px}
+    .dialogue{display:grid;gap:12px;margin-top:16px}
+    .line{
+      padding:14px 14px 12px; border:1px solid var(--line); border-radius:14px;
+      background:#fcfcfd;
+    }
+    .line-top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+    .en{font-size:18px;font-weight:700;line-height:1.45}
+    .zh{color:var(--muted);margin-top:6px;line-height:1.55}
+    .play-group{display:flex;gap:7px;flex-shrink:0}
+    .play{
+      min-width:54px; padding:8px 10px; border-radius:10px; font-size:14px
+    }
+    .slow{background:#f8fafc}
+    .table{width:100%;border-collapse:collapse;margin-top:8px}
+    .table th,.table td{border-bottom:1px solid var(--line);padding:12px 8px;text-align:left;vertical-align:middle}
+    .table th{font-size:13px;color:var(--muted);font-weight:700}
+    .word{font-weight:750}
+    .ipa{font-family:"Times New Roman",serif;font-size:17px}
+    .note{
+      border-left:4px solid #6366f1; padding:12px 14px; background:#f7f7ff;
+      border-radius:10px; margin:10px 0; line-height:1.65;
+    }
+    .note.bad{border-left-color:#f97316;background:var(--warn)}
+    .status{
+      margin-top:12px; padding:10px 12px; border-radius:10px; background:var(--good);
+      color:#065f46; font-size:13px; display:none;
+    }
+    .small{font-size:13px;color:var(--muted);line-height:1.6}
+
+    .lesson-tools{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      flex-wrap:wrap; margin-top:14px;
+    }
+    .speed-wrap{
+      display:flex; align-items:center; gap:10px;
+    }
+    .speed-label{
+      font-size:13px; color:var(--muted); font-weight:700;
+    }
+    .speed-segment{
+      display:inline-flex; padding:3px; border:1px solid var(--line);
+      background:#f8fafc; border-radius:999px; box-shadow:inset 0 1px 2px rgba(17,24,39,.03);
+    }
+    .speed-btn{
+      border:none; background:transparent; min-width:58px; padding:7px 12px;
+      border-radius:999px; font-size:13px; font-weight:700; color:#6b7280;
+    }
+    .speed-btn.active{
+      background:#111827; color:white; box-shadow:0 2px 7px rgba(17,24,39,.18);
+    }
+    .sentence-play{
+      width:40px; height:40px; padding:0; border-radius:50%;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:15px; flex:0 0 auto;
+    }
+    .word-token{
+      display:inline; cursor:pointer; border-radius:6px; padding:1px 2px;
+      transition:background .15s ease,color .15s ease;
+    }
+    .word-token:hover,.word-token:focus{
+      background:#eef2ff; color:#3730a3; outline:none;
+    }
+    .word-token:active{background:#e0e7ff}
+.word-hint{
+      margin-top:10px; font-size:12px; color:var(--muted);
+    }
+    .sheet-backdrop{
+      position:fixed; inset:0; background:rgba(17,24,39,.34);
+      display:none; align-items:flex-end; justify-content:center;
+      z-index:9999; padding:16px;
+    }
+    .sheet-backdrop.open{display:flex}
+    .word-sheet{
+      width:min(560px,100%); background:white; border-radius:22px 22px 16px 16px;
+      box-shadow:0 24px 60px rgba(17,24,39,.25); padding:20px;
+      animation:sheetUp .18s ease-out;
+    }
+    @keyframes sheetUp{
+      from{transform:translateY(18px);opacity:.6}
+      to{transform:translateY(0);opacity:1}
+    }
+    .sheet-head{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    }
+    .sheet-word{font-size:27px;font-weight:800;line-height:1.2}
+    .sheet-ipa{font-family:"Times New Roman",serif;font-size:18px;color:#4b5563;margin-top:4px}
+    .sheet-close{
+      border:none;background:#f3f4f6;width:34px;height:34px;border-radius:50%;padding:0;font-size:20px
+    }
+    .sheet-meaning{
+      margin-top:16px; padding:14px; background:#f8fafc; border-radius:14px; line-height:1.65;
+    }
+    .sheet-row{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px
+    }
+    .sheet-example{
+      margin-top:16px;border-top:1px solid var(--line);padding-top:16px
+    }
+    .example-en{font-weight:700;line-height:1.55}
+    .example-zh{color:var(--muted);margin-top:5px;line-height:1.55}
+/* --- Compact vocabulary popup & icon controls --- */
+    .word-sheet{
+      width:min(430px,calc(100% - 24px));
+      border-radius:18px 18px 14px 14px;
+      padding:16px;
+    }
+    .sheet-head{gap:10px}
+    .sheet-word-row{
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    }
+    .sheet-word{font-size:22px;font-weight:800;line-height:1.15}
+    .sheet-ipa{font-size:16px;margin-top:3px}
+    .pos-badge{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:3px 7px; border-radius:999px;
+      background:#eef2ff; color:#4f46e5;
+      font-size:11px; font-weight:800; letter-spacing:.01em;
+    }
+    .icon-btn{
+      width:32px; height:32px; padding:0;
+      display:inline-flex; align-items:center; justify-content:center;
+      border-radius:50%; border:1px solid var(--line);
+      background:#fff; color:#111827; font-size:16px;
+      flex:0 0 auto;
+    }
+    .icon-btn:hover{background:#f8fafc}
+    .sheet-close{
+      width:30px;height:30px;font-size:18px;
+    }
+    .sheet-meaning{
+      margin-top:12px; padding:11px 12px; border-radius:12px;
+      font-size:14px; line-height:1.55;
+    }
+    .sheet-example{
+      margin-top:13px; padding-top:13px;
+    }
+    .example-en{font-size:14px;line-height:1.5}
+    .example-zh{font-size:13px;line-height:1.5}
+    .sentence-play{
+      width:34px; height:34px;
+      border:none; background:transparent;
+      font-size:17px;
+    }
+    .sentence-play:hover{background:#f3f4f6}
+    .word-audio-btn{
+      width:30px;height:30px;font-size:15px;border:none;background:#f8fafc;
+    }
+    .vocab-pos{
+      display:inline-flex; margin-left:6px;
+      padding:2px 6px; border-radius:999px;
+      background:#f3f4f6; color:#6b7280;
+      font-size:10px; font-weight:800; vertical-align:middle;
+    }
+
+    /* --- Dialogue UI: single source of truth --- */
+    .dialogue{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      margin-top:18px;
+      width:100%;
+    }
+
+    .dialogue-row{
+      width:100%;
+    }
+
+    .message-grid{
+      display:grid;
+      align-items:center;
+      column-gap:10px;
+      row-gap:6px;
+      width:max-content;
+      max-width:86%;
+    }
+
+    /* A: avatar | bubble | audio */
+    .role-a .message-grid{
+      grid-template-columns:34px minmax(0, auto) 40px;
+      grid-template-areas:
+        "avatar bubble audio"
+        ". translation ."
+        ". follow .";
+      margin-right:auto;
+    }
+
+    /* B: audio | bubble | avatar */
+    .role-b .message-grid{
+      grid-template-columns:40px minmax(0, auto) 34px;
+      grid-template-areas:
+        "audio bubble avatar"
+        ". translation ."
+        ". follow .";
+      margin-left:auto;
+    }
+
+    .role-avatar{
+      grid-area:avatar;
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:800;
+      color:#fff;
+      flex:0 0 auto;
+      align-self:center;
+      margin:0;
+    }
+
+    .role-a .role-avatar{background:#111827;}
+    .role-b .role-avatar{background:#6366f1;}
+
+    .bubble{
+      grid-area:bubble;
+      width:fit-content;
+      max-width:100%;
+      padding:12px 14px;
+      border-radius:18px;
+      box-shadow:0 2px 8px rgba(17,24,39,.04);
+    }
+
+    .role-a .bubble{
+      background:#fff;
+      border:1px solid var(--line);
+      border-bottom-left-radius:6px;
+    }
+
+    .role-b .bubble{
+      background:#eef2ff;
+      border:1px solid #dbe2ff;
+      border-bottom-right-radius:6px;
+    }
+
+    .bubble .en{
+      margin:0;
+      font-size:17px;
+      font-weight:750;
+      line-height:1.45;
+      white-space:normal;
+      word-break:normal;
+    }
+
+    .sentence-audio{
+      grid-area:audio;
+      width:38px;
+      height:38px;
+      min-width:38px;
+      border:none !important;
+      background:transparent !important;
+      box-shadow:none !important;
+      border-radius:50%;
+      padding:0;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#111827;
+      align-self:center;
+      cursor:pointer;
+    }
+
+    .sentence-audio:hover{
+      background:#f3f4f6 !important;
+    }
+
+    .sentence-audio svg{
+      width:27px;
+      height:27px;
+      display:block;
+    }
+
+    .message-translation{
+      grid-area:translation;
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.5;
+      padding:0 3px;
+      min-width:0;
+      white-space:normal;
+    }
+
+    .role-a .message-translation{text-align:left;}
+    .role-b .message-translation{text-align:right;}
+
+    .follow-controls{
+      grid-area:follow;
+      display:none;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:2px;
+    }
+
+    .dialogue-row.follow-active .follow-controls{
+      display:flex;
+    }
+
+    .dialogue-row.follow-active .bubble{
+      border-color:#c7d2fe;
+      box-shadow:0 0 0 3px rgba(99,102,241,.08);
+    }
+
+    .follow-chip{
+      font-size:12px;
+      color:#4f46e5;
+      background:#eef2ff;
+      border:1px solid #c7d2fe;
+      border-radius:999px;
+      padding:5px 9px;
+      font-weight:700;
+    }
+
+    .follow-btn{
+      padding:7px 10px;
+      font-size:12px;
+      border-radius:9px;
+    }
+
+    .word-token.follow-current{
+      background:#111827;
+      color:#fff;
+    }
+.word-with-audio{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .word-with-audio .word-audio-btn{
+      width:22px;
+      height:22px;
+      min-width:22px;
+      margin:0;
+    }
+    .word-with-audio .word-audio-btn svg{
+      width:13px;
+      height:13px;
+    }
+
+    @media (max-width:640px){
+      .message-grid{max-width:96%;}
+      .role-a .message-grid{
+        grid-template-columns:30px minmax(0, auto) 36px;
+      }
+      .role-b .message-grid{
+        grid-template-columns:36px minmax(0, auto) 30px;
+      }
+      .role-avatar{width:28px;height:28px;}
+      .sentence-audio{width:34px;height:34px;min-width:34px;}
+      .sentence-audio svg{width:24px;height:24px;}
+      .bubble .en{font-size:16px;}
+      .message-translation{font-size:13px;}
+    }
+
+
+
+    @media (max-width:640px){
+      .bubble-wrap{max-width:82%}
+      .bubble .en{font-size:16px}
+      .bubble .zh{font-size:13px}
+    }
+
+    @media (max-width:640px){
+      h1{font-size:25px}
+      .en{font-size:17px}
+      .line-top{gap:8px}
+      .play{padding:7px 9px}
+      .speed-btn{min-width:52px;padding:7px 10px}
+      .table{display:block;overflow-x:auto;white-space:nowrap}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <h1>📒 Zinnia's English Speaking Notebook</h1>
+    <div class="sub">英语口语练习本 · 对话 / 中文 / 发音 / IPA / 易错点</div>
+
+    <div class="toolbar">
+      <label for="voiceSelect"><strong>发音声音</strong></label>
+      <select id="voiceSelect" aria-label="Voice"></select>
+      <button id="testVoice" class="primary">▶ 测试声音</button>
+    </div>
+
+    <div id="voiceStatus" class="status"></div>
+  </section>
+
+  <section class="card">
+    <div class="title-row">
+      <h2>Lesson 01 · Cooking — 煮方便面</h2>
+      <span class="small">2026-09-11</span>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="speed-wrap">
+        <span class="speed-label">跟读语速</span>
+        <div class="speed-segment" role="group" aria-label="跟读语速">
+          <button class="speed-btn" data-speed="0.5">0.5×</button>
+          <button class="speed-btn active" data-speed="0.75">0.75×</button>
+          <button class="speed-btn" data-speed="1">1.0×</button>
+        </div>
+      </div>
+      <div class="small">点击英文单词看释义；点击整句可进入逐词跟读</div>
+    </div>
+
+    <div class="dialogue">
+      <div class="dialogue-row role-a">
+        <div class="message-grid">
+          <div class="role-avatar">A</div>
+
+          <div class="bubble">
+            <div class="en"><span class="word-token" tabindex="0" data-word="what">What</span> <span class="word-token" tabindex="0" data-word="are">are</span> <span class="word-token" tabindex="0" data-word="you">you</span> <span class="word-token" tabindex="0" data-word="cooking">cooking</span> <span class="word-token" tabindex="0" data-word="now">now</span>?</div>
+          </div>
+
+          <button class="play sentence-play sentence-audio"
+                  data-text="What are you cooking now?"
+                  data-rate="global"
+                  aria-label="播放句子"
+                  title="播放句子">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/>
+  <path d="M8.4 10.2v3.6h2.5l3 2.25V7.95l-3 2.25H8.4Z"
+        stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>
+  <path d="M16.1 9.4c.8.65 1.2 1.5 1.2 2.6s-.4 1.95-1.2 2.6"
+        stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+</svg>
+          </button>
+
+          <div class="message-translation">你现在在做什么菜？</div>
+
+          <div class="follow-controls">
+            <span class="follow-chip">逐词跟读</span>
+            <button class="follow-btn follow-start">▶ 开始</button>
+            <button class="follow-btn follow-stop">■ 停止</button>
+          </div>
+        </div>
+      </div>
+      <div class="dialogue-row role-b">
+        <div class="message-grid">
+          <div class="role-avatar">B</div>
+
+          <div class="bubble">
+            <div class="en"><span class="word-token" tabindex="0" data-word="i'm">I'm</span> <span class="word-token" tabindex="0" data-word="cooking">cooking</span> <span class="word-token" tabindex="0" data-word="instant">instant</span> <span class="word-token" tabindex="0" data-word="noodles">noodles</span>.</div>
+          </div>
+
+          <button class="play sentence-play sentence-audio"
+                  data-text="I'm cooking instant noodles."
+                  data-rate="global"
+                  aria-label="播放句子"
+                  title="播放句子">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/>
+  <path d="M8.4 10.2v3.6h2.5l3 2.25V7.95l-3 2.25H8.4Z"
+        stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>
+  <path d="M16.1 9.4c.8.65 1.2 1.5 1.2 2.6s-.4 1.95-1.2 2.6"
+        stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+</svg>
+          </button>
+
+          <div class="message-translation">我正在煮方便面。</div>
+
+          <div class="follow-controls">
+            <span class="follow-chip">逐词跟读</span>
+            <button class="follow-btn follow-start">▶ 开始</button>
+            <button class="follow-btn follow-stop">■ 停止</button>
+          </div>
+        </div>
+      </div>
+      <div class="dialogue-row role-a">
+        <div class="message-grid">
+          <div class="role-avatar">A</div>
+
+          <div class="bubble">
+            <div class="en"><span class="word-token" tabindex="0" data-word="what">What</span> <span class="word-token" tabindex="0" data-word="ingredients">ingredients</span> <span class="word-token" tabindex="0" data-word="are">are</span> <span class="word-token" tabindex="0" data-word="you">you</span> <span class="word-token" tabindex="0" data-word="using">using</span>?</div>
+          </div>
+
+          <button class="play sentence-play sentence-audio"
+                  data-text="What ingredients are you using?"
+                  data-rate="global"
+                  aria-label="播放句子"
+                  title="播放句子">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/>
+  <path d="M8.4 10.2v3.6h2.5l3 2.25V7.95l-3 2.25H8.4Z"
+        stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>
+  <path d="M16.1 9.4c.8.65 1.2 1.5 1.2 2.6s-.4 1.95-1.2 2.6"
+        stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+</svg>
+          </button>
+
+          <div class="message-translation">你用了什么食材？</div>
+
+          <div class="follow-controls">
+            <span class="follow-chip">逐词跟读</span>
+            <button class="follow-btn follow-start">▶ 开始</button>
+            <button class="follow-btn follow-stop">■ 停止</button>
+          </div>
+        </div>
+      </div>
+      <div class="dialogue-row role-b">
+        <div class="message-grid">
+          <div class="role-avatar">B</div>
+
+          <div class="bubble">
+            <div class="en"><span class="word-token" tabindex="0" data-word="i'm">I'm</span> <span class="word-token" tabindex="0" data-word="using">using</span> <span class="word-token" tabindex="0" data-word="instant">instant</span> <span class="word-token" tabindex="0" data-word="noodles">noodles</span> <span class="word-token" tabindex="0" data-word="with">with</span> <span class="word-token" tabindex="0" data-word="vegetables">vegetables</span> <span class="word-token" tabindex="0" data-word="and">and</span> <span class="word-token" tabindex="0" data-word="some">some</span> <span class="word-token" tabindex="0" data-word="beef">beef</span>.</div>
+          </div>
+
+          <button class="play sentence-play sentence-audio"
+                  data-text="I'm using instant noodles with vegetables and some beef."
+                  data-rate="global"
+                  aria-label="播放句子"
+                  title="播放句子">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/>
+  <path d="M8.4 10.2v3.6h2.5l3 2.25V7.95l-3 2.25H8.4Z"
+        stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>
+  <path d="M16.1 9.4c.8.65 1.2 1.5 1.2 2.6s-.4 1.95-1.2 2.6"
+        stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+</svg>
+          </button>
+
+          <div class="message-translation">我用了方便面、蔬菜和一些牛肉。</div>
+
+          <div class="follow-controls">
+            <span class="follow-chip">逐词跟读</span>
+            <button class="follow-btn follow-start">▶ 开始</button>
+            <button class="follow-btn follow-stop">■ 停止</button>
+          </div>
+        </div>
+      </div>
+      <div class="dialogue-row role-b">
+        <div class="message-grid">
+          <div class="role-avatar">B</div>
+
+          <div class="bubble">
+            <div class="en"><span class="word-token" tabindex="0" data-word="i">I</span> <span class="word-token" tabindex="0" data-word="like">like</span> <span class="word-token" tabindex="0" data-word="it">it</span> <span class="word-token" tabindex="0" data-word="a">a</span> <span class="word-token" tabindex="0" data-word="little">little</span> <span class="word-token" tabindex="0" data-word="spicy">spicy</span>.</div>
+          </div>
+
+          <button class="play sentence-play sentence-audio"
+                  data-text="I like it a little spicy."
+                  data-rate="global"
+                  aria-label="播放句子"
+                  title="播放句子">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/>
+  <path d="M8.4 10.2v3.6h2.5l3 2.25V7.95l-3 2.25H8.4Z"
+        stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>
+  <path d="M16.1 9.4c.8.65 1.2 1.5 1.2 2.6s-.4 1.95-1.2 2.6"
+        stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+</svg>
+          </button>
+
+          <div class="message-translation">我喜欢微辣一点。</div>
+
+          <div class="follow-controls">
+            <span class="follow-chip">逐词跟读</span>
+            <button class="follow-btn follow-start">▶ 开始</button>
+            <button class="follow-btn follow-stop">■ 停止</button>
+          </div>
+        </div>
+      </div></div>
+  </section>
+
+  <section class="card">
+    <h3>重点词汇</h3>
+    <table class="table">
+      <thead>
+        <tr><th>单词 / 短语</th><th>词性</th><th>IPA</th><th>中文</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>instant noodles</span><button class="play icon-btn word-audio-btn" data-text="instant noodles" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">n.</span></td>
+          <td class="ipa">/ˈɪnstənt ˈnuːdəlz/</td>
+          <td>方便面</td>
+        </tr>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>ingredient</span><button class="play icon-btn word-audio-btn" data-text="ingredient" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">n.</span></td>
+          <td class="ipa">/ɪnˈɡriːdiənt/</td>
+          <td>食材；配料</td>
+        </tr>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>ingredients</span><button class="play icon-btn word-audio-btn" data-text="ingredients" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">n.</span></td>
+          <td class="ipa">/ɪnˈɡriːdiənts/</td>
+          <td>食材；配料（复数）</td>
+        </tr>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>vegetables</span><button class="play icon-btn word-audio-btn" data-text="vegetables" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">n.</span></td>
+          <td class="ipa">/ˈvedʒtəbəlz/</td>
+          <td>蔬菜</td>
+        </tr>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>beef</span><button class="play icon-btn word-audio-btn" data-text="beef" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">n.</span></td>
+          <td class="ipa">/biːf/</td>
+          <td>牛肉</td>
+        </tr>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>spicy</span><button class="play icon-btn word-audio-btn" data-text="spicy" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">adj.</span></td>
+          <td class="ipa">/ˈspaɪsi/</td>
+          <td>辣的</td>
+        </tr>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>cooking</span><button class="play icon-btn word-audio-btn" data-text="cooking" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">v.</span></td>
+          <td class="ipa">/ˈkʊkɪŋ/</td>
+          <td>正在做饭；烹饪</td>
+        </tr>
+        <tr>
+          <td class="word"><div class="word-with-audio"><span>using</span><button class="play icon-btn word-audio-btn" data-text="using" data-rate="0.9" aria-label="播放发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button></div></td>
+          <td><span class="vocab-pos">v.</span></td>
+          <td class="ipa">/ˈjuːzɪŋ/</td>
+          <td>正在使用</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h3>今天的易错点</h3>
+    <div class="note bad"><strong>❌ I cooking instant noodles.</strong><br>✅ I'm cooking instant noodles.<br>进行时需要 <strong>am</strong>。</div>
+    <div class="note bad"><strong>❌ I using...</strong><br>✅ I'm using...<br>同样要说 <strong>I am using / I'm using</strong>。</div>
+    <div class="note bad"><strong>❌ I'm like it.</strong><br>✅ I like it.<br><strong>like</strong> 在这里不需要 am。</div>
+    <div class="note bad"><strong>❌ I like a little spicy.</strong><br>✅ I like it a little spicy.<br>加上 <strong>it</strong> 更自然。</div>
+    <div class="note bad"><strong>❌ a little spices</strong><br>✅ a little spicy<br><strong>spicy</strong> 是“辣的”；<strong>spices</strong> 是“香料”。</div>
+  </section>
+</div>
+
+<div class="sheet-backdrop" id="wordBackdrop" aria-hidden="true">
+  <div class="word-sheet" role="dialog" aria-modal="true" aria-labelledby="sheetWord">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-word-row">
+          <div class="sheet-word" id="sheetWord">word</div>
+          <span class="pos-badge" id="sheetPos"></span>
+          <button class="icon-btn word-audio-btn" id="sheetSpeak" aria-label="播放单词发音" title="播放发音"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 10v4h3l4 3V7L8 10H5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M15 9.2c1 .8 1.5 1.7 1.5 2.8S16 14 15 14.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M17.5 7.3c1.5 1.3 2.3 2.8 2.3 4.7s-.8 3.4-2.3 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></button>
+        </div>
+        <div class="sheet-ipa" id="sheetIpa"></div>
+      </div>
+      <button class="sheet-close" id="sheetClose" aria-label="关闭">×</button>
+    </div>
+    <div class="sheet-meaning" id="sheetMeaning"></div>
+    <div class="sheet-example">
+      <div class="small" style="margin-bottom:6px"><strong>例句</strong></div>
+      <div class="example-en" id="sheetExampleEn"></div>
+      <div class="example-zh" id="sheetExampleZh"></div>
+    </div>
+  </div>
+</div>
+<script>
+  const voiceSelect = document.getElementById('voiceSelect');
+  const voiceStatus = document.getElementById('voiceStatus');
+  let voices = [];
+
+  function scoreVoice(v){
+    const name = (v.name || '').toLowerCase();
+    const lang = (v.lang || '').toLowerCase();
+    let s = 0;
+    if(lang.startsWith('en-us')) s += 50;
+    else if(lang.startsWith('en')) s += 20;
+    if(/samantha|ava|allison|serena|jenny|aria|zira|google us english|natural|premium|enhanced/.test(name)) s += 30;
+    if(/compact|novelty/.test(name)) s -= 20;
+    return s;
+  }
+
+  function loadVoices(){
+    voices = speechSynthesis.getVoices()
+      .filter(v => (v.lang || '').toLowerCase().startsWith('en'))
+      .sort((a,b) => scoreVoice(b) - scoreVoice(a));
+
+    voiceSelect.innerHTML = '';
+    if(!voices.length){
+      const opt = document.createElement('option');
+      opt.textContent = '系统暂无可用英语语音';
+      voiceSelect.appendChild(opt);
+      return;
+    }
+
+    voices.forEach((v,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${v.name} (${v.lang})`;
+      voiceSelect.appendChild(opt);
+    });
+
+    const saved = localStorage.getItem('preferredEnglishVoice');
+    if(saved){
+      const idx = voices.findIndex(v => `${v.name}|${v.lang}` === saved);
+      if(idx >= 0) voiceSelect.value = idx;
+    }
+  }
+
+  function speak(text, rate=1){
+    if(!('speechSynthesis' in window)){
+      alert('当前浏览器不支持语音朗读。建议使用 Safari、Chrome 或 Edge。');
+      return;
+    }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voices[Number(voiceSelect.value)] || voices[0];
+    if(v) u.voice = v;
+    u.lang = (v && v.lang) || 'en-US';
+    u.rate = Number(rate);
+    u.pitch = 1;
+    u.volume = 1;
+    speechSynthesis.speak(u);
+  }
+
+  voiceSelect.addEventListener('change', ()=>{
+    const v = voices[Number(voiceSelect.value)];
+    if(v) localStorage.setItem('preferredEnglishVoice', `${v.name}|${v.lang}`);
+  });
+
+  document.querySelectorAll('.play').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const rawRate = btn.dataset.rate;
+      const rate = rawRate === 'global'
+        ? (typeof globalSpeed !== 'undefined' ? globalSpeed : 0.75)
+        : Number(rawRate || 1);
+      speak(btn.dataset.text, rate);
+    });
+  });
+
+  document.getElementById('testVoice').addEventListener('click', ()=>{
+    const v = voices[Number(voiceSelect.value)] || voices[0];
+    speak("Hi, this is your English speaking notebook.", 0.92);
+    if(v){
+      voiceStatus.style.display = 'block';
+      voiceStatus.textContent = `当前声音：${v.name} · ${v.lang}。如果不喜欢，可以在左边下拉菜单换一个声音。`;
+    }
+  });
+
+  loadVoices();
+  if(typeof speechSynthesis !== 'undefined'){
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  let globalSpeed = 0.75;
+
+  document.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      globalSpeed = Number(btn.dataset.speed);
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      localStorage.setItem('speakingNotebookSpeed', String(globalSpeed));
+    });
+  });
+
+  const savedSpeed = Number(localStorage.getItem('speakingNotebookSpeed'));
+  if ([0.5,0.75,1].includes(savedSpeed)) {
+    globalSpeed = savedSpeed;
+    document.querySelectorAll('.speed-btn').forEach(b => {
+      b.classList.toggle('active', Number(b.dataset.speed) === savedSpeed);
+    });
+  }
+
+  const wordData = {"what": {"display": "what", "ipa": "/wʌt/", "meaning": "什么；什么东西", "example": "What do you want to eat?", "exampleZh": "你想吃什么？", "pos": "pron."}, "are": {"display": "are", "ipa": "/ɑːr/", "meaning": "是；处于（be 动词，用于 you / we / they 等）", "example": "Are you ready?", "exampleZh": "你准备好了吗？", "pos": "v."}, "you": {"display": "you", "ipa": "/juː/", "meaning": "你；你们", "example": "You can try this.", "exampleZh": "你可以试试这个。", "pos": "pron."}, "cooking": {"display": "cooking", "ipa": "/ˈkʊkɪŋ/", "meaning": "做饭；烹饪（cook 的现在分词）", "example": "I'm cooking dinner now.", "exampleZh": "我现在正在做晚饭。", "pos": "v."}, "now": {"display": "now", "ipa": "/naʊ/", "meaning": "现在；此刻", "example": "I'm busy right now.", "exampleZh": "我现在正忙。", "pos": "adv."}, "i'm": {"display": "I'm", "ipa": "/aɪm/", "meaning": "I am 的缩写：我是；我正在……", "example": "I'm learning English.", "exampleZh": "我正在学英语。", "pos": "v."}, "instant": {"display": "instant", "ipa": "/ˈɪnstənt/", "meaning": "即食的；速成的；立刻的", "example": "I bought some instant noodles.", "exampleZh": "我买了一些方便面。", "pos": "adj."}, "noodles": {"display": "noodles", "ipa": "/ˈnuːdəlz/", "meaning": "面条（noodle 的复数）", "example": "These noodles are delicious.", "exampleZh": "这些面条很好吃。", "pos": "n."}, "ingredients": {"display": "ingredients", "ipa": "/ɪnˈɡriːdiənts/", "meaning": "食材；配料（ingredient 的复数）", "example": "What ingredients do we need?", "exampleZh": "我们需要哪些食材？", "pos": "n."}, "using": {"display": "using", "ipa": "/ˈjuːzɪŋ/", "meaning": "使用；正在用（use 的现在分词）", "example": "I'm using a small pan.", "exampleZh": "我正在用一个小锅。", "pos": "v."}, "with": {"display": "with", "ipa": "/wɪð/", "meaning": "和；带有；用", "example": "I want coffee with milk.", "exampleZh": "我想要加牛奶的咖啡。", "pos": "prep."}, "vegetables": {"display": "vegetables", "ipa": "/ˈvedʒtəbəlz/", "meaning": "蔬菜（vegetable 的复数）", "example": "I eat vegetables every day.", "exampleZh": "我每天都吃蔬菜。", "pos": "n."}, "and": {"display": "and", "ipa": "/ænd/", "meaning": "和；以及", "example": "I like beef and vegetables.", "exampleZh": "我喜欢牛肉和蔬菜。", "pos": "conj."}, "some": {"display": "some", "ipa": "/sʌm/", "meaning": "一些；若干", "example": "Can I have some water?", "exampleZh": "我可以喝点水吗？", "pos": "det."}, "beef": {"display": "beef", "ipa": "/biːf/", "meaning": "牛肉", "example": "The beef smells good.", "exampleZh": "牛肉闻起来很香。", "pos": "n."}, "i": {"display": "I", "ipa": "/aɪ/", "meaning": "我", "example": "I like cooking.", "exampleZh": "我喜欢做饭。", "pos": "pron."}, "like": {"display": "like", "ipa": "/laɪk/", "meaning": "喜欢", "example": "I like spicy food.", "exampleZh": "我喜欢辣的食物。", "pos": "v."}, "it": {"display": "it", "ipa": "/ɪt/", "meaning": "它；这件事", "example": "It tastes great.", "exampleZh": "它尝起来很棒。", "pos": "pron."}, "a": {"display": "a", "ipa": "/ə/", "meaning": "一个；一（不定冠词）", "example": "I need a bowl.", "exampleZh": "我需要一个碗。", "pos": "art."}, "little": {"display": "little", "ipa": "/ˈlɪtəl/", "meaning": "少量的；一点点", "example": "Add a little salt.", "exampleZh": "加一点盐。", "pos": "adj."}, "spicy": {"display": "spicy", "ipa": "/ˈspaɪsi/", "meaning": "辣的；辛辣的", "example": "This soup is a little spicy.", "exampleZh": "这碗汤有一点辣。", "pos": "adj."}};
+
+  const backdrop = document.getElementById('wordBackdrop');
+  const sheetWord = document.getElementById('sheetWord');
+  const sheetIpa = document.getElementById('sheetIpa');
+  const sheetPos = document.getElementById('sheetPos');
+  const sheetMeaning = document.getElementById('sheetMeaning');
+  const sheetExampleEn = document.getElementById('sheetExampleEn');
+  const sheetExampleZh = document.getElementById('sheetExampleZh');
+  const sheetSpeak = document.getElementById('sheetSpeak');
+  let activeWordText = '';
+
+  function openWordSheet(key) {
+    const item = wordData[key];
+    if (!item) return;
+    activeWordText = item.display;
+    sheetWord.textContent = item.display;
+    sheetIpa.textContent = item.ipa;
+    if (sheetPos) sheetPos.textContent = item.pos || '';
+    sheetMeaning.textContent = item.meaning;
+    sheetExampleEn.textContent = item.example;
+    sheetExampleZh.textContent = item.exampleZh;
+    if (!backdrop) return;
+    backdrop.classList.add('open');
+    backdrop.setAttribute('aria-hidden','false');
+  }
+
+  function closeWordSheet() {
+    if (!backdrop) return;
+    backdrop.classList.remove('open');
+    backdrop.setAttribute('aria-hidden','true');
+  }
+
+  document.querySelectorAll('.word-token').forEach(el => {
+    el.addEventListener('click', () => openWordSheet(el.dataset.word));
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openWordSheet(el.dataset.word);
+      }
+    });
+  });
+
+  const sheetClose = document.getElementById('sheetClose');
+  if (sheetClose) sheetClose.addEventListener('click', closeWordSheet);
+  if (backdrop) backdrop.addEventListener('click', e => {
+    if (e.target === backdrop) closeWordSheet();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeWordSheet();
+  });
+  sheetSpeak.addEventListener('click', () => {
+    if (activeWordText) speak(activeWordText, 0.9);
+  });
+
+
+
+  let followTimer = null;
+  let followLine = null;
+
+  function clearFollowHighlight(){
+    document.querySelectorAll('.word-token.follow-current').forEach(w => w.classList.remove('follow-current'));
+  }
+
+  function stopFollowMode(){
+    if (followTimer) clearInterval(followTimer);
+    followTimer = null;
+    clearFollowHighlight();
+    speechSynthesis.cancel();
+  }
+
+  function exitAllFollowLines(){
+    document.querySelectorAll('.line.follow-active').forEach(l => l.classList.remove('follow-active'));
+    stopFollowMode();
+    followLine = null;
+  }
+
+  function enterFollowMode(line){
+    if (followLine && followLine !== line) {
+      followLine.classList.remove('follow-active');
+      stopFollowMode();
+    }
+    followLine = line;
+    line.classList.add('follow-active');
+  }
+
+  function startFollow(line){
+    enterFollowMode(line);
+    stopFollowMode();
+
+    const sentenceBtn = line.querySelector('.sentence-play');
+    const words = Array.from(line.querySelectorAll('.word-token'));
+    if (!sentenceBtn || !words.length) return;
+
+    const text = sentenceBtn.dataset.text;
+    const rate = globalSpeed || 0.75;
+
+    // Speak whole sentence.
+    speak(text, rate);
+
+    // Approximate timing for visual word tracking.
+    // This keeps the interaction lightweight and works across browsers even when
+    // boundary events are unavailable or inconsistent.
+    const baseMsPerWord = 430;
+    const msPerWord = baseMsPerWord / Math.max(rate, 0.5);
+    let i = 0;
+
+    clearFollowHighlight();
+    words[0].classList.add('follow-current');
+
+    followTimer = setInterval(() => {
+      clearFollowHighlight();
+      i += 1;
+      if (i >= words.length){
+        clearInterval(followTimer);
+        followTimer = null;
+        return;
+      }
+      words[i].classList.add('follow-current');
+    }, msPerWord);
+  }
+
+  document.querySelectorAll('.dialogue .dialogue-row').forEach(line => {
+    const en = line.querySelector('.bubble .en');
+    if (en){
+      en.style.cursor = 'pointer';
+      en.addEventListener('click', (e) => {
+        if (e.target.closest('.word-token')) return;
+        if (line.classList.contains('follow-active')) {
+          line.classList.remove('follow-active');
+          if (followLine === line) stopFollowMode();
+          followLine = null;
+        } else {
+          enterFollowMode(line);
+        }
+      });
+    }
+
+    const start = line.querySelector('.follow-start');
+    const stop = line.querySelector('.follow-stop');
+    if (start) start.addEventListener('click', () => startFollow(line));
+    if (stop) stop.addEventListener('click', () => {
+      stopFollowMode();
+    });
+  });
+
+  // If the user clicks a word while follow mode is open, keep the line open
+  // but show the word detail sheet as before.
+
+  // Hide the active word-by-word follow controls when clicking outside that sentence.
+  document.addEventListener('click', (event) => {
+    const activeRow = document.querySelector('.dialogue-row.follow-active');
+    if (!activeRow) return;
+
+    if (activeRow.contains(event.target)) return;
+    if (event.target.closest('#wordBackdrop')) return;
+
+    activeRow.classList.remove('follow-active');
+    if (followLine === activeRow) {
+      stopFollowMode();
+      followLine = null;
+    }
+  });
+
+</script>
+
+</body>
+</html>
