@@ -414,6 +414,52 @@
       .speed-btn{min-width:52px;padding:7px 10px}
       .table{display:block;overflow-x:auto;white-space:nowrap}
     }
+
+    /* Lesson navigation: phase 0/1 foundation. Lesson content stays in the
+       existing cards, while this layer owns switching, URL state and modules. */
+    .lesson-navigator{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:stretch;
+      margin-top:18px; padding:8px; border:1px solid var(--line);
+      background:#fff; border-radius:16px; box-shadow:0 6px 20px rgba(17,24,39,.03);
+    }
+    .lesson-nav-label{
+      display:flex; align-items:center; padding:0 8px;
+      color:var(--muted); font-size:12px; font-weight:800;
+      letter-spacing:.04em; text-transform:uppercase;
+    }
+    .lesson-nav-button{
+      flex:1 1 220px; min-width:0; padding:11px 13px;
+      border:1px solid transparent; border-radius:12px; background:#f8fafc;
+      color:var(--text); text-align:left; font-weight:700;
+    }
+    .lesson-nav-button:hover{background:#f3f4f6}
+    .lesson-nav-button[aria-current="true"]{
+      background:#111827; border-color:#111827; color:#fff;
+    }
+    .lesson-nav-button small{
+      display:block; margin-top:3px; color:inherit; opacity:.72;
+      font-size:12px; font-weight:600;
+    }
+    .lesson-module-bar{
+      display:flex; gap:7px; align-items:center; overflow-x:auto;
+      margin-top:18px; padding:0 2px 10px; border-bottom:1px solid var(--line);
+    }
+    .lesson-module-button{
+      flex:0 0 auto; border:none; border-radius:999px; background:transparent;
+      color:var(--muted); padding:8px 11px; font-size:13px; font-weight:800;
+    }
+    .lesson-module-button:hover{background:#f3f4f6}
+    .lesson-module-button[aria-selected="true"]{
+      background:#eef2ff; color:#3730a3;
+    }
+    .lesson-section[hidden]{display:none !important}
+
+    @media (max-width:640px){
+      .lesson-navigator{padding:7px; gap:6px}
+      .lesson-nav-label{display:none}
+      .lesson-nav-button{flex-basis:150px; padding:10px 11px; font-size:13px}
+      .lesson-module-bar{margin-top:14px}
+    }
   </style>
 </head>
 <body>
@@ -1188,6 +1234,155 @@
       followLine = null;
     }
   });
+
+  // Lesson catalog is the single navigation source for the current phase.
+  // Future lessons only need one metadata record plus their existing content cards.
+  const lessonCatalog = [
+    { id: 'lesson-01', number: 'Lesson 01', title: 'Cooking', subtitle: '煮方便面', date: '2026-09-11' },
+    { id: 'lesson-02', number: 'Lesson 02', title: 'Weekend Plans', subtitle: '周六聚会计划', date: '2026-09-12' }
+  ];
+
+  const lessonCards = Array.from(document.querySelectorAll('.wrap > .card'));
+  const lessonGroups = new Map();
+
+  lessonCatalog.forEach((lesson, index) => {
+    const headingCardIndex = lessonCards.findIndex(card => {
+      const heading = card.querySelector('h2');
+      return heading && heading.textContent.trim().startsWith(lesson.number);
+    });
+    if (headingCardIndex < 0) return;
+
+    const nextLesson = lessonCatalog[index + 1];
+    const nextHeadingCardIndex = nextLesson
+      ? lessonCards.findIndex(card => {
+          const heading = card.querySelector('h2');
+          return heading && heading.textContent.trim().startsWith(nextLesson.number);
+        })
+      : -1;
+    const endIndex = nextHeadingCardIndex >= 0 ? nextHeadingCardIndex : lessonCards.length;
+    const cards = lessonCards.slice(headingCardIndex, endIndex);
+
+    cards.forEach((card, cardIndex) => {
+      card.classList.add('lesson-section');
+      card.dataset.lessonId = lesson.id;
+      card.dataset.lessonModule = ['dialogue', 'vocabulary', 'corrections'][cardIndex] || 'extra';
+      card.id = `${lesson.id}-${card.dataset.lessonModule}`;
+    });
+    lessonGroups.set(lesson.id, cards);
+  });
+
+  const firstLessonCard = lessonCatalog
+    .map(lesson => lessonGroups.get(lesson.id)?.[0])
+    .find(Boolean);
+
+  if (firstLessonCard && lessonGroups.size) {
+    const navigator = document.createElement('nav');
+    navigator.className = 'lesson-navigator';
+    navigator.setAttribute('aria-label', 'Lesson 切换');
+    navigator.innerHTML = '<span class="lesson-nav-label">Lessons</span>';
+
+    const moduleBar = document.createElement('div');
+    moduleBar.className = 'lesson-module-bar';
+    moduleBar.setAttribute('role', 'tablist');
+    moduleBar.setAttribute('aria-label', '当前 Lesson 内容');
+
+    firstLessonCard.before(navigator);
+    navigator.after(moduleBar);
+
+    const moduleLabels = {
+      dialogue: '场景对话',
+      vocabulary: '重点词汇',
+      corrections: '典型错误'
+    };
+    let activeLessonId = null;
+
+    function saveLastLesson(id) {
+      try { localStorage.setItem('speakingNotebookLastLesson', id); } catch (_) {}
+    }
+
+    function getInitialLessonId() {
+      const fromHash = window.location.hash.slice(1);
+      if (lessonGroups.has(fromHash)) return fromHash;
+      try {
+        const saved = localStorage.getItem('speakingNotebookLastLesson');
+        if (lessonGroups.has(saved)) return saved;
+      } catch (_) {}
+      return lessonCatalog[lessonCatalog.length - 1].id;
+    }
+
+    function setActiveModule(moduleName) {
+      const cards = lessonGroups.get(activeLessonId) || [];
+      const available = cards.find(card => card.dataset.lessonModule === moduleName)
+        ? moduleName
+        : cards[0]?.dataset.lessonModule;
+
+      cards.forEach(card => {
+        card.hidden = card.dataset.lessonModule !== available;
+      });
+      moduleBar.querySelectorAll('button').forEach(button => {
+        const selected = button.dataset.module === available;
+        button.setAttribute('aria-selected', String(selected));
+        button.tabIndex = selected ? 0 : -1;
+      });
+    }
+
+    function renderModuleBar() {
+      const cards = lessonGroups.get(activeLessonId) || [];
+      moduleBar.replaceChildren();
+      cards.forEach((card, index) => {
+        const moduleName = card.dataset.lessonModule;
+        if (!moduleLabels[moduleName]) return;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'lesson-module-button';
+        button.dataset.module = moduleName;
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-controls', card.id);
+        button.setAttribute('aria-selected', String(index === 0));
+        button.textContent = moduleLabels[moduleName];
+        button.addEventListener('click', () => setActiveModule(moduleName));
+        moduleBar.appendChild(button);
+      });
+      setActiveModule('dialogue');
+    }
+
+    function setActiveLesson(id, { updateHash = true, scroll = false } = {}) {
+      if (!lessonGroups.has(id)) return;
+      activeLessonId = id;
+      lessonCatalog.forEach(lesson => {
+        const isActive = lesson.id === id;
+        const button = navigator.querySelector(`[data-lesson-id="${lesson.id}"]`);
+        if (button) button.setAttribute('aria-current', String(isActive));
+        (lessonGroups.get(lesson.id) || []).forEach(card => {
+          card.hidden = !isActive;
+        });
+      });
+      renderModuleBar();
+      saveLastLesson(id);
+      if (updateHash && window.location.hash !== `#${id}`) {
+        history.replaceState(null, '', `#${id}`);
+      }
+      if (scroll) navigator.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    lessonCatalog.forEach(lesson => {
+      if (!lessonGroups.has(lesson.id)) return;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'lesson-nav-button';
+      button.dataset.lessonId = lesson.id;
+      button.innerHTML = `${lesson.number} · ${lesson.title}<small>${lesson.subtitle} · ${lesson.date}</small>`;
+      button.addEventListener('click', () => setActiveLesson(lesson.id, { scroll: true }));
+      navigator.appendChild(button);
+    });
+
+    window.addEventListener('hashchange', () => {
+      const id = window.location.hash.slice(1);
+      if (lessonGroups.has(id)) setActiveLesson(id, { updateHash: false });
+    });
+
+    setActiveLesson(getInitialLessonId(), { updateHash: false });
+  }
 
 </script>
 
